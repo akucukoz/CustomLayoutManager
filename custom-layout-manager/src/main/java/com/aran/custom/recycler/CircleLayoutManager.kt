@@ -2,10 +2,13 @@ package com.aran.custom.recycler
 
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import androidx.recyclerview.widget.RecyclerView.*
+import kotlin.math.PI
 import kotlin.math.floor
+import kotlin.math.sin
 
 class CircleLayoutManager : LayoutManager() {
 
+    private val viewWidth = 120
     private var horizontalScrollOffset = 0
 
     override fun generateDefaultLayoutParams(): LayoutParams =
@@ -26,7 +29,8 @@ class CircleLayoutManager : LayoutManager() {
     private fun fill(recycler: Recycler) {
         detachAndScrapAttachedViews(recycler)
 
-        val viewWidth = 120
+        println("view item size = ${recycler.getViewForPosition(2).width}")
+
         val firstVisibleItemPosition = floor(horizontalScrollOffset.toDouble() / viewWidth).toInt()
         val lastVisibleItemPosition = (horizontalScrollOffset + width) / viewWidth
         for (i in firstVisibleItemPosition..lastVisibleItemPosition) {
@@ -37,10 +41,10 @@ class CircleLayoutManager : LayoutManager() {
             val view = recycler.getViewForPosition(recyclerIndex)
             addView(view)
 
-            val top = 0
-            val bottom = top + viewWidth
             val left = i * viewWidth - horizontalScrollOffset
             val right = left + viewWidth
+            val top = getTopOffset(left.toDouble() + (viewWidth.toDouble() / 2))
+            val bottom = top + viewWidth
 
             measureChild(view, viewWidth, viewWidth)
 
@@ -51,5 +55,12 @@ class CircleLayoutManager : LayoutManager() {
         scrapListCopy.forEach {
             recycler.recycleView(it.itemView)
         }
+    }
+
+    private fun getTopOffset(viewCenterX: Double): Int {
+        val r = width / 2
+        val alpha = (viewCenterX / width) * PI
+        val y =  r - (r * sin(alpha))
+        return y.toInt() - (viewWidth / 2)
     }
 }
